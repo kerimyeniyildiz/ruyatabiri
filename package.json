@@ -1,0 +1,26 @@
+{
+  "name": "ruyatabiri",
+  "private": true,
+  "packageManager": "npm@10.9.2",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace @ruyatabiri/web",
+    "build:web": "npm run build --workspace @ruyatabiri/web",
+    "start:web": "npm run start --workspace @ruyatabiri/web",
+    "lint:web": "npm run lint --workspace @ruyatabiri/web",
+    "dev:worker": "npm run dev --workspace @ruyatabiri/worker",
+    "build:worker": "npm run build --workspace @ruyatabiri/worker",
+    "start:worker": "npm run start --workspace @ruyatabiri/worker",
+    "lint:worker": "npm run lint --workspace @ruyatabiri/worker",
+    "typecheck:worker": "npm run typecheck --workspace @ruyatabiri/worker",
+    "prisma:generate": "npm run prisma:generate --workspace @ruyatabiri/database",
+    "prisma:migrate": "npm run prisma:migrate --workspace @ruyatabiri/database",
+    "format": "npm exec prettier -- --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3"
+  }
+}

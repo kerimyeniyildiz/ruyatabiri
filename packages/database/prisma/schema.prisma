@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  extensions = [citext()]
+}
+
+enum DreamTitleStatus {
+  QUEUED
+  GENERATING
+  READY
+  PUBLISHED
+  FAILED
+}
+
+enum GenerationJobType {
+  TEXT
+  IMAGE
+}
+
+enum GenerationJobStatus {
+  QUEUED
+  RUNNING
+  DONE
+  FAILED
+}
+
+model DreamTitle {
+  id              String             @id @default(uuid()) @db.Uuid
+  title           String             @db.Text
+  titleNormalized String             @db.Citext
+  slug            String             @unique @db.Citext
+  status          DreamTitleStatus   @default(QUEUED)
+  priority        Int                @default(0)
+  scheduledFor    DateTime?          @db.Timestamptz(6)
+  publishedAt     DateTime?          @db.Timestamptz(6)
+  metaTitle       String             @db.VarChar(60) @default("")
+  metaDescription String             @db.VarChar(160) @default("")
+  imageUrl        String?            @db.Text
+  imageAlt        String?            @db.VarChar(180)
+  contentHtml     String             @db.Text @default("")
+  contentToc      Json?
+  relatedKeywords String[]           @default([])
+  faqs            Json?
+  lastGenerationAt DateTime?         @db.Timestamptz(6)
+  failReason       String?           @db.Text
+  createdAt        DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime          @updatedAt @db.Timestamptz(6)
+
+  jobs GenerationJob[]
+
+  @@unique([titleNormalized])
+  @@index([status])
+  @@index([scheduledFor])
+  @@index([publishedAt])
+}
+
+model GenerationJob {
+  id                    String               @id @default(uuid()) @db.Uuid
+  dreamTitleId          String               @db.Uuid
+  type                  GenerationJobType
+  status                GenerationJobStatus  @default(QUEUED)
+  replicatePredictionId String?              @db.Text
+  startedAt             DateTime?            @db.Timestamptz(6)
+  finishedAt            DateTime?            @db.Timestamptz(6)
+  tokensUsed            Int?
+  costUsd               Decimal?             @db.Decimal(10, 4)
+  error                 String?              @db.Text
+  createdAt             DateTime             @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime             @updatedAt @db.Timestamptz(6)
+
+  dreamTitle DreamTitle @relation(fields: [dreamTitleId], references: [id], onDelete: Cascade)
+
+  @@index([dreamTitleId])
+  @@index([status])
+}
+
+model Settings {
+  key       String   @id @db.Text
+  value     Json
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+}
